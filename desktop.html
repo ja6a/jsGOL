@@ -1,0 +1,59 @@
+<!DOCTYPE html><html manifest="gol.appcache">
+<head >
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>John Horton Conway's Game of Life</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="base.css" />
+<link rel="stylesheet" type="text/css" href="enhanced.css" media="all and (min-width: 600px) and (max-width: 800px) " />
+<link rel="stylesheet" type="text/css" href="enhancedxtra.css" media="only all and (min-width: 800px)" />
+<!-- Change this to your web site <link rel="canonical" href="http://mine/gol/"/>-->
+</head>
+<body onLoad="setDesktopDevice();">
+<div class="head">
+<img src="Icon.png" width="32" height="32" alt="Game of Life glider icon"/>
+<span id="mob_switch">Switch to <a
+			href="http://mine/gol/index.php?m=1">Mobile
+			view</a>
+	</span>
+<h1>John Horton Conway's Game of Life</h1></div>
+<h2>Please see the <a href="http://en.m.wikipedia.org/wiki/Conway%27s_Game_of_Life">Wikipedia</a> entry for more information</h2>
+<h3>Author: James Annesley - 10-11/2011</h3>
+<h3>Click the Random button to get started.</h3>		
+		<p>
+		Size: <select class="mybutton" id="selsize" onchange="setSizeFromSelect(this.value)">
+		<option value="Microvision">Microvision</option>
+		<option value="QQVGA">QQVGA</option>
+		<option value="QVGA">QVGA</option>	
+		<option value="WQVGA" selected="selected">WQVGA</option>
+		<option value="VGA">VGA</option></select>
+		Speed (hz): <select class="mybutton"  id="seldelay" onchange="setDelayFromSelect(this.value)">
+		<option value="0.01">0.01</option>
+		<option value="0.05">0.05</option>
+		<option value="0.1" selected="selected">0.1</option>
+		<option value="0.5">0.5</option>
+		<option value="1" >1</option>
+		<option value="2">2</option></select>
+		</p>
+		<p>Preset life states: 
+		<input class="mybutton" type="button" value="Random" onclick = "random();"/>
+		<input class="mybutton" type="button" value="Glider" onclick = "glider();"/>
+		<input class="mybutton" type="button" value="Acorn" onclick = "acorn();"/>
+		</p>
+<p>Control: 
+		<input class="mybutton" type="button" value="start" onclick = "start();"/>
+		<input class="mybutton" type="button" value="stop" onclick = "stop();"/>
+</p>
+<div id="dim1"></div>
+<div id="dim2"></div>
+<div>
+<canvas id="canvas" style="width: 100%; height: 100%;">
+This text is displayed if your browser does not support HTML5 Canvas.
+</canvas>
+</div>
+
+<div id="out"></div>
+<div id="e"></div>
+<script type="text/javascript" src="modernizr-2.0.6.js"></script>
+<script type="text/javascript" src="gol.js"></script>
+</body>
+</html>

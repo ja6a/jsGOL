@@ -1,0 +1,23 @@
+CACHE MANIFEST
+
+# version 0.1
+
+CACHE:
+
+/gol/base.css
+/gol/enhanced.css
+/gol/enhancedxtra.css
+/gol/gol.js
+/gol/modernizr-2.0.6.js
+/gol/Icon.png
+/gol/Calligraffiti-webfont.woff 
+/gol/Calligraffiti-webfont.ttf 
+/gol/Calligraffiti-webfont.svg 
+/gol/Calligraffiti-webfont.eot 
+
+FALLBACK:
+/gol/status.html
+
+NETWORK:
+/gol/index.php
+/gol/Mobile_Detect.php
