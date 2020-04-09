@@ -293,9 +293,8 @@ function gol() {
     for (let y = 0; y < canvas.height; y++) {
         for (let x = 0; x < canvas.width; x++) {
             //d.innerText = "x:"+x +" y:"+ y;
-            const cell = (y * canvas.width + x) * 4;
 
-            const alive = isAlive(cell, x, y);
+            const alive = isAlive(x, y);
 
             let colour = 255;
             if (alive) {
@@ -309,17 +308,22 @@ function gol() {
     context.putImageData(dataNew, 0, 0);
 }
 
-function isAlive(cell, x, y) {
+function isAlive(x, y) {
     let alive = false;
     let aliveCount = 0;
 
+    const cell = (y * canvas.width + x) * 4;
+
     for (let ky = -1; ky < 2; ky++) {
         for (let kx = -1; kx < 2; kx++) {
-            const neighbour = ((y + ky) * canvas.width + (x + kx)) * 4;
+
+            const modifiedKx = ((x + kx) + canvas.width) % canvas.width;
+            const modifiedKy = ((y + ky) + canvas.height) % canvas.height;
+
+            const neighbour = ((modifiedKy) * canvas.width + (modifiedKx)) * 4;
 
             //e.innerText = "neighbour:"+neighbour;
-            if (neighbour >= 0 && neighbour <= pix.length && neighbour !== cell
-                && pix[neighbour] === 0) {
+            if (neighbour !== cell && pix[neighbour] === 0) {
                 aliveCount++;
             }
         }
