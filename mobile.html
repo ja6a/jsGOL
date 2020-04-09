@@ -21,13 +21,13 @@
 <h3>Author: James Annesley - 10-11/2011</h3>
 <h3>Click the Random button to get started.</h3>		
 		<p>
-		Size: <select class="mybutton" id="selsize" onchange="setSizeFromSelect(this.value)">
+		Size: <select class="mybutton" id="selsize" onchange="setSizeFromSelect(this.selectedIndex)">
 		<option value="Microvision" selected="selected">Microvision</option>
 		<option value="QQVGA">QQVGA</option>
 		<option value="QVGA">QVGA</option>	
 		<option value="WQVGA">WQVGA</option>
 		<option value="VGA">VGA</option></select>
-		Speed (hz): <select class="mybutton" id="seldelay" onchange="setDelayFromSelect(this.value)">
+		Speed (hz): <select class="mybutton" id="seldelay" onchange="setDelayFromSelect(this.selectedIndex)">
 		<option value="0.01">0.01</option>
 		<option value="0.05">0.05</option>
 		<option value="0.1">0.1</option>

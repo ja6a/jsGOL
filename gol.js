@@ -1,26 +1,39 @@
-let delay = 50;
-let size = "Microvision";
-let canvas = document.getElementById('canvas');
-let context = canvas.getContext('2d');
+const delays = [0.01, 0.05, 0.1, 0.5, 1, 2];
+const ALIVE = 0;
+const DEAD = 255;
+const canvasStorageItem = 'canvas';
+const sizeIndexStorageItem = "canvassizeIndex";
+const delayIndexStorageItem = 'delayIndex';
+const debug = false;
+const canvas = document.getElementById(canvasStorageItem);
+const context = canvas.getContext('2d');
+const dim1 = document.getElementById('dim1');
+const dim2 = document.getElementById('dim2');
+let refreshIntervalId, data, pix, isMobile;
 
-let refreshIntervalId;
-let data;
-let pix;
-let isMobile;
+function setMobileDevice() {
+    isMobile = true;
+    recoverState();
+}
 
-let debug = false;
-let dim1 = document.getElementById('dim1');
-let dim2 = document.getElementById('dim2');
+function setDesktopDevice() {
+    isMobile = false;
+    recoverState();
+}
 
 function recoverState() {
+    let sizeIndex = 0;
+    let delayIndex = 0;
     // Use Modernizr to detect whether localstorage is supported by the browser
     let localStorageImage;
     if (Modernizr.localstorage) {
-        if (localStorage['canvassize']) {
-            size = localStorage['canvassize'];
-            setSize();
+        if (localStorage[sizeIndexStorageItem]) {
+            sizeIndex = localStorage[sizeIndexStorageItem];
         }
-        if (localStorage['canvas']) {
+        if (localStorage[delayIndexStorageItem]) {
+            delayIndex = localStorage[delayIndexStorageItem];
+        }
+        if (localStorage[canvasStorageItem]) {
             localStorageImage = new Image(canvas.width, canvas.height);
             localStorageImage.addEventListener("load", function (event) {
                 context.drawImage(localStorageImage, 0, 0);
@@ -28,54 +41,43 @@ function recoverState() {
                 pix = data.data;
 
             }, false);
-            localStorageImage.src = localStorage['canvas'];
-        }
-
-        if (localStorage['delay']) {
-            delay = parseInt(localStorage['delay'], 10);
+            localStorageImage.src = localStorage[canvasStorageItem];
         }
     } else {
-        if (readCookie("canvassize")) {
-            size = readCookie("canvassize");
-            setSize();
+        if (readCookie(sizeIndexStorageItem)) {
+            sizeIndex = readCookie(sizeIndexStorageItem);
         }
-        if (readCookie("delay")) {
-            delay = parseInt(readCookie("delay"), 10);
+        if (readCookie(delayIndexStorageItem)) {
+            delayIndex = readCookie(delayIndexStorageItem);
         }
     }
+    setSize(sizeIndex);
+    drawCanvas();
     // update the controls
-    setSelectedSize();
-    setSelectedDelay();
+    setSelectedSize(sizeIndex);
+    setSelectedDelay(delayIndex);
 }
 
-function saveDelay() {
+function saveDelay(delayIndex) {
     if (Modernizr.localstorage) {
-        localStorage['delay'] = delay;
+        localStorage[delayIndexStorageItem] = delayIndex;
     } else {
-        createCookie("delay", delay, 7);
+        createCookie(delayIndexStorageItem, delayIndex, 7);
     }
 }
 
-function saveSize() {
+function saveSize(sizeIndex) {
     if (Modernizr.localstorage) {
-        localStorage['canvassize'] = size;
+        localStorage[sizeIndexStorageItem] = sizeIndex;
     } else {
-        createCookie("canvassize", size, 7);
+        createCookie(sizeIndexStorageItem, sizeIndex, 7);
     }
 }
 
 function saveCanvas() {
     if (Modernizr.localstorage) {
-        localStorage['canvas'] = canvas.toDataURL('image/png');
+        localStorage[canvasStorageItem] = canvas.toDataURL('image/png');
     }
-}
-
-function stop() {
-    clearInterval(refreshIntervalId);
-    // save state to storage
-    saveCanvas();
-    saveSize();
-    saveDelay();
 }
 
 function createCookie(name, value, days) {
@@ -99,7 +101,78 @@ function readCookie(name) {
     return null;
 }
 
-function init() {
+function setSizeFromSelect(sizeIndex) {
+    setSize(sizeIndex);
+    saveSize(sizeIndex);
+    drawCanvas();
+}
+
+function setSize(sizeIndex) {
+    clearInterval(refreshIntervalId);
+    if (isMobile) {
+        setSizeMobile(sizeIndex);
+    } else {
+        setSizeDesktop(sizeIndex);
+    }
+    if (debug) {
+        dim1.innerText = "DEBUG: width:" + canvas.width + " height:" + canvas.height;
+    }
+}
+
+function setSizeDesktop(sizeIndex) {
+    const standardScreenSize = getStandardScreenSize(sizeIndex);
+    canvas.width = standardScreenSize.width;
+    canvas.height = standardScreenSize.height;
+}
+
+function setSizeMobile(sizeIndex) {
+    const standardScreenSize = getStandardScreenSize(sizeIndex);
+    canvas.height = standardScreenSize.width;
+    canvas.width = standardScreenSize.height;
+}
+
+function getStandardScreenSize(sizeIndex) {
+    const sizes = [[16, 16], [160, 120], [320, 240], [432, 240], [640, 480]];
+    const size = sizes[sizeIndex];
+    return {
+        "width": size[0],
+        "height": size[1]
+    };
+}
+
+function setDelayFromSelect(delayIndex) {
+    clearInterval(refreshIntervalId);
+    if (debug) {
+        dim2.innerText = "DEBUG: delay:" + delayIndex;
+    }
+    saveDelay(delayIndex);
+}
+
+function setSelectedSize(sizeIndex) {
+    document.getElementById('selsize').options[sizeIndex].selected = true;
+    if (debug) {
+        dim1.innerText = "DEBUG: width:" + canvas.width + " height:" + canvas.height;
+    }
+}
+
+function setSelectedDelay(delayIndex) {
+    document.getElementById('seldelay').options[delayIndex].selected = true;
+}
+
+function start() {
+    const delayIndex = document.getElementById('selsize').options.selected;
+    const delay = delays[delayIndex];
+    clearInterval(refreshIntervalId);
+    refreshIntervalId = setInterval("gol();", delay);
+}
+
+function stop() {
+    clearInterval(refreshIntervalId);
+    // save state to storage
+    saveCanvas();
+}
+
+function drawCanvas() {
     data = context.createImageData(canvas.width, canvas.height);
 
     pix = data.data;
@@ -116,7 +189,7 @@ function init() {
 function glider() {
     clearInterval(refreshIntervalId);
 
-    init();
+    drawCanvas();
 
     const colour = 0;
     const deltax = canvas.width / 2;
@@ -134,7 +207,7 @@ function glider() {
 function acorn() {
     clearInterval(refreshIntervalId);
 
-    init();
+    drawCanvas();
 
     const colour = 0;
     const deltax = canvas.width / 2;
@@ -154,7 +227,7 @@ function acorn() {
 function random() {
     clearInterval(refreshIntervalId);
 
-    init();
+    drawCanvas();
     for (let y = 0; y < canvas.height; y++) {
         for (let x = 0; x < canvas.width; x++) {
 
@@ -182,102 +255,6 @@ function drawPixel(x, y, colour, thepix) {
     thepix[pixel + 3] = 255; // alpha
 }
 
-function setSizeFromSelect(newsize) {
-    size = newsize;
-    setSize();
-
-    saveSize();
-}
-
-function setSize() {
-    if (isMobile) {
-        setSizeMobile();
-    } else {
-        setSizeDesktop();
-    }
-    if (debug) {
-        dim1.innerText = "DEBUG: width:" + canvas.width + " height:" + canvas.height;
-    }
-    init();
-}
-
-function getStandardScreenSize() {
-    let width, height;
-    if ("Microvision" === size) {
-        width = 16;
-        height = 16;
-    } else if ("QQVGA" === size) {
-        width = 160;
-        height = 120;
-    } else if ("QVGA" === size) {
-        width = 320;
-        height = 240;
-    } else if ("WQVGA" === size) {
-        width = 432;
-        height = 240;
-    } else if ("VGA" === size) {
-        width = 640;
-        height = 480;
-    }
-    return {
-        "width": width,
-        "height": height
-    }
-}
-
-function setSizeDesktop() {
-    clearInterval(refreshIntervalId);
-    const standardScreenSize = getStandardScreenSize();
-    canvas.width = standardScreenSize.width;
-    canvas.height = standardScreenSize.height;
-}
-
-function setSizeMobile() {
-    clearInterval(refreshIntervalId);
-    const standardScreenSize = getStandardScreenSize();
-    canvas.height = standardScreenSize.width;
-    canvas.width = standardScreenSize.height;
-}
-
-function setDelayFromSelect(delayStr) {
-    clearInterval(refreshIntervalId);
-    delay = parseInt(delayStr, 10);
-    if (debug) {
-        dim2.innerText = "DEBUG: delay:" + delay;
-    }
-    saveDelay();
-}
-
-function setSelectedSize() {
-    if (isMobile) {
-        setSelectedSizeMobile();
-    } else {
-        setSelectedSizeDesktop();
-    }
-    if (debug) {
-        dim1.innerText = "DEBUG: width:" + canvas.width + " height:" + canvas.height;
-    }
-}
-
-function setSelectedSizeDesktop() {
-    const sizes = ["Microvision", "QQVGA", "QVGA", "WQVGA", "VGA"];
-    document.getElementById('selsize').options[sizes.indexOf(size)].selected = true;
-}
-
-// TODO add mobile friendly sizes
-function setSelectedSizeMobile() {
-    setSelectedSizeDesktop();
-}
-
-function setSelectedDelay() {
-    const delays = [10, 50, 100, 500, 1000, 2000];
-    document.getElementById('seldelay').options[delays.indexOf(delay)].selected = true;
-}
-
-function start() {
-    clearInterval(refreshIntervalId);
-    refreshIntervalId = setInterval("gol();", delay);
-}
 
 /*
  * Taken from wikipedia:
@@ -293,14 +270,7 @@ function gol() {
     for (let y = 0; y < canvas.height; y++) {
         for (let x = 0; x < canvas.width; x++) {
             //d.innerText = "x:"+x +" y:"+ y;
-
-            const alive = isAlive(x, y);
-
-            let colour = 255;
-            if (alive) {
-                colour = 0;
-            }
-            drawPixel(x, y, colour, pixNew);
+            drawPixel(x, y, isAlive(x, y) ? ALIVE : DEAD, pixNew);
         }
     }
     data = dataNew;
@@ -310,7 +280,7 @@ function gol() {
 
 function isAlive(x, y) {
     let alive = false;
-    let aliveCount = 0;
+    let aliveNeighbours = 0;
 
     const cell = (y * canvas.width + x) * 4;
 
@@ -319,34 +289,17 @@ function isAlive(x, y) {
 
             const modifiedKx = ((x + kx) + canvas.width) % canvas.width;
             const modifiedKy = ((y + ky) + canvas.height) % canvas.height;
-
             const neighbour = ((modifiedKy) * canvas.width + (modifiedKx)) * 4;
 
             //e.innerText = "neighbour:"+neighbour;
             if (neighbour !== cell && pix[neighbour] === 0) {
-                aliveCount++;
+                aliveNeighbours++;
             }
         }
     }
-    //e.innerText = "aliveCount:"+aliveCount;
-    if ((aliveCount >= 2 && aliveCount <= 3 && pix[cell] === 0)
-        ||
-        (aliveCount === 3)) {
+    //e.innerText = "aliveNeighbours:"+aliveNeighbours;
+    if (3 === aliveNeighbours || (2 === aliveNeighbours && pix[cell] === ALIVE)) {
         alive = true;
     }
     return alive;
-}
-
-function setMobileDevice() {
-    isMobile = true;
-    init();
-    recoverState();
-    setSize();
-}
-
-function setDesktopDevice() {
-    isMobile = false;
-    init();
-    recoverState();
-    setSize();
 }
