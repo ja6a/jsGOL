@@ -13,17 +13,14 @@ let dim1 = document.getElementById('dim1');
 let dim2 = document.getElementById('dim2');
 
 function recoverState() {
-
     // Use Modernizr to detect whether localstorage is supported by the browser
     let localStorageImage;
     if (Modernizr.localstorage) {
-
         if (localStorage['canvassize']) {
             size = localStorage['canvassize'];
             setSize();
         }
         if (localStorage['canvas']) {
-
             localStorageImage = new Image(canvas.width, canvas.height);
             localStorageImage.addEventListener("load", function (event) {
                 context.drawImage(localStorageImage, 0, 0);
@@ -32,12 +29,10 @@ function recoverState() {
 
             }, false);
             localStorageImage.src = localStorage['canvas'];
-
-
         }
 
         if (localStorage['delay']) {
-            delay = localStorage['delay'];
+            delay = parseInt(localStorage['delay'], 10);
         }
     } else {
         if (readCookie("canvassize")) {
@@ -45,13 +40,12 @@ function recoverState() {
             setSize();
         }
         if (readCookie("delay")) {
-            delay = readCookie("delay");
+            delay = parseInt(readCookie("delay"), 10);
         }
     }
     // update the controls
     setSelectedSize();
     setSelectedDelay();
-
 }
 
 function saveDelay() {
@@ -116,6 +110,7 @@ function init() {
             drawPixel(x, y, 255, pix);
         }
     }
+    context.putImageData(data, 0, 0);
 }
 
 function glider() {
@@ -203,6 +198,7 @@ function setSize() {
     if (debug) {
         dim1.innerText = "DEBUG: width:" + canvas.width + " height:" + canvas.height;
     }
+    init();
 }
 
 function getStandardScreenSize() {
@@ -245,7 +241,7 @@ function setSizeMobile() {
 
 function setDelayFromSelect(delayStr) {
     clearInterval(refreshIntervalId);
-    delay = parseInt(delayStr, 10) * 1000;
+    delay = parseInt(delayStr, 10);
     if (debug) {
         dim2.innerText = "DEBUG: delay:" + delay;
     }
